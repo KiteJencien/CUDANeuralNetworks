@@ -80,7 +80,12 @@ void DenseLayer::applyErrors() {
     MatrixOperations::callMatCopy(gridSize, CUDA_BLOCK_SIZE, this->pastErrors, this->errors);
 }
 
-void DenseLayer::calculateErrors(DenseLayer *thisLayer, DenseLayer *nextLayer) {
+void DenseLayer::calculateErrors(Layer *in, Layer *next) {
+    //do not call this method for layers that are not dense layers
+    auto* thisLayer = dynamic_cast<DenseLayer*>(in);
+    auto* nextLayer = dynamic_cast<DenseLayer*>(next);
+
+
     MatrixOperations::Matrix2d *nextLayerWeights = nextLayer->weights;
     dim3 gridSize = dim3((nextLayerWeights->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (nextLayerWeights->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);

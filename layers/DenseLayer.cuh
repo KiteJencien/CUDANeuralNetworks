@@ -14,8 +14,8 @@ public:
     MatrixOperations::Matrix2d *weights, *weightDerivative,*bias, *z, *nodes, *errors, *pastErrors;
 
     //the callback function for error calculation
-    typedef void (callBack)(DenseLayer *thisLayer, DenseLayer *nextLayer);
-    static void calculateErrors(DenseLayer *thisLayer, DenseLayer *nextLayer);
+    typedef void (callBack)(Layer *in, Layer *next);
+    static void calculateErrors(Layer *thisLayer, Layer *nextLayer);
 
     //construct the layer object
     DenseLayer(int NODE_NUMBER, int PREV_NODE_NUMBER){
@@ -63,8 +63,6 @@ public:
 
     //The front operation of running the network
     void calculateActivations(MatrixOperations::Matrix2d *prevNodes) override ;
-
-    void calculateErrors(Layer *nextLayer);
 
     //this is used for straight training
     void calculateErrors(MatrixOperations::Matrix2d *nextLayerWeights, MatrixOperations::Matrix2d *nextLayerErr) ;

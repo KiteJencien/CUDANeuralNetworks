@@ -17,7 +17,7 @@ std::string LogUtils::generatePrefix() {
     std::string str(buffer);
 
     string out = "[";
-    out.append(str).append("pid:").append(to_string(_getpid())).append(" ] ");
+    out.append(str).append(" pid:").append(to_string(_getpid())).append(" ] ");
     return out;
 }
 

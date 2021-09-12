@@ -6,7 +6,24 @@
 #define NETWORKS_DATASET_CUH
 
 
+#include "TrainData.cuh"
+#include "../NetConfig.cuh"
+
 class Dataset {
+public:
+    struct DatasetInstance{
+        int size = DATA_SIZE;
+        TrainData* data;
+    };
+
+    struct BatchInstance{
+        int size = BATCH_SIZE;
+        TrainData* data;
+    };
+
+    Dataset(){
+
+    }
 
 };
 

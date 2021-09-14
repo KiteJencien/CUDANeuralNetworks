@@ -12,7 +12,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <windows.h>
+#include <Windows.h>
 #include <ctime>
 
 

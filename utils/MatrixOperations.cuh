@@ -28,6 +28,7 @@ public:
 
     //set the element at location
     static __device__ void setElement2D(Matrix2d *source, int row, int col, float value);
+    static void callSetElement(Matrix2d *mat1, int row, int col, float value);
 
     //call cross product method
     static void callCrossProduct2D( Matrix2d *mat1, Matrix2d *mat2, Matrix2d *result);

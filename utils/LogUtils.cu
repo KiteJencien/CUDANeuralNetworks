@@ -3,7 +3,7 @@
 //
 
 #include "LogUtils.cuh"
-#include <windows.h>
+#include <Windows.h>
 
 std::string LogUtils::generatePrefix() {
     time_t rawtime;

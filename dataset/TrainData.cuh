@@ -5,7 +5,7 @@
 #ifndef NETWORKS_TRAINDATA_CUH
 #define NETWORKS_TRAINDATA_CUH
 
-#include "../NetConfig.cuh"
+#include "../../Networks/NetConfig.cuh"
 #include "../utils/MatrixOperations.cuh"
 #include "../utils/LogUtils.cuh"
 

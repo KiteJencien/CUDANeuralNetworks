@@ -3,10 +3,16 @@
 //
 
 #include "MatrixOperations.cuh"
-#include "../NetConfig.cuh"
+#include "../../Networks/NetConfig.cuh"
 
 using namespace std;
+
 //global functions: operations
+
+__global__ void setElement(MatrixOperations::Matrix2d *mat1, int row, int col, float value){
+    MatrixOperations::setElement2D(mat1,row, col, value);
+}
+
 __global__ void allocateElements(MatrixOperations::Matrix2d *mat1,int row, int col){
     mat1->rowcount = row;
     mat1->colcount = col;
@@ -311,6 +317,10 @@ void MatrixOperations::callAllocRandom(MatrixOperations::Matrix2d *mat1) {
     (void) cudaDeviceSynchronize();
 }
 
+void MatrixOperations::callSetElement(MatrixOperations::Matrix2d *mat1, int row, int col, float value) {
+    (void) setElement<<<dim3(1,1),CUDA_BLOCK_SIZE>>>(mat1, row, col, value);
+    (void)cudaDeviceSynchronize();
+}
 
 
 

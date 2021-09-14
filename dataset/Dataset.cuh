@@ -5,25 +5,26 @@
 #ifndef NETWORKS_DATASET_CUH
 #define NETWORKS_DATASET_CUH
 
-
 #include "TrainData.cuh"
-#include "../NetConfig.cuh"
+#include "../../Networks/NetConfig.cuh"
+#include <string>
+
+//#pragma comment(lib,"opencv_core452.lib")
+//#pragma comment(lib,"opencv_highgui452.lib")
+//#pragma comment(lib,"opencv_imgproc452.lib")
+
 
 class Dataset {
 public:
     struct DatasetInstance{
-        int size = DATA_SIZE;
-        TrainData* data;
+        vector<TrainData*> data = vector<TrainData*>(DATA_SIZE);
     };
 
     struct BatchInstance{
-        int size = BATCH_SIZE;
-        TrainData* data;
+        vector<TrainData*> data = vector<TrainData*>(BATCH_SIZE);
     };
 
-    Dataset(){
-
-    }
+    static void readDatasetMNIST(DatasetInstance *instance, const string& type);
 
 };
 

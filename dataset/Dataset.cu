@@ -3,3 +3,9 @@
 //
 
 #include "Dataset.cuh"
+#include <cstdio>
+
+
+void Dataset::readDatasetMNIST(Dataset::DatasetInstance *instance, const string& type) {
+
+}

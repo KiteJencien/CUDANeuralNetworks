@@ -3,7 +3,7 @@
 //
 
 #include "DenseLayer.cuh"
-#include "../NetConfig.cuh"
+#include "../../Networks/NetConfig.cuh"
 
 void DenseLayer::calculateActivations(MatrixOperations::Matrix2d *prevNodes)  {
     //z = w * a + b , a1 = sigmoid(z)

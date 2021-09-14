@@ -9,7 +9,7 @@
 #include "../layers/Layer.cuh"
 #include "../layers/InputLayerDense.cuh"
 #include "../layers/DenseLayer.cuh"
-#include "../NetConfig.cuh"
+#include "../../Networks/NetConfig.cuh"
 #include "vector"
 
 class ModelMLP {

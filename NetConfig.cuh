@@ -24,8 +24,9 @@ static int DATA_INPUT_SIZE_2D_W = 28;
 static int DATA_INPUT_SIZE_2D_H = 28;
 static int DATA_OUTPUT_SIZE_1D = 10;
 
-static int MNIST_CATEGORIES = 10;
-static int MNIST_INPUT_DIMENSION_W = 28;
+static int DATA_CATEGORIES = 10;
+static int MNIST_INPUT_DIMENSION_ROW = 28;
+static int MNIST_INPUT_DIMENSION_COL = 28;
 
 static bool START_FROM_RANDOM = true;
 class NetConfig {

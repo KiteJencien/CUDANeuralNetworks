@@ -6,6 +6,7 @@
 #define CUDANETWORKS_DATASET_CUH
 
 #include "TrainData.cuh"
+#include "../utils/BMPDecomp.cuh"
 #include "../NetConfig.cuh"
 #include <string>
 

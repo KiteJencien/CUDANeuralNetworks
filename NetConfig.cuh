@@ -11,7 +11,7 @@
 using namespace std;
 
 static dim3 CUDA_BLOCK_SIZE = dim3(32, 32);
-static float LEARNING_RATE = 0.05;
+static float LEARNING_RATE = 0.03;
 
 static const string DATA_PATH = R"(C:\Users\DanielSun\Desktop\resources\mnist\decompress_mnist)";
 static const string TRAIN_PATH = "\\train";

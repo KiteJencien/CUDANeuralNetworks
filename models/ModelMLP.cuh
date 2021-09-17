@@ -11,6 +11,7 @@
 #include "../layers/DenseLayer.cuh"
 #include "../NetConfig.cuh"
 #include "vector"
+#include "../datasets/TrainData.cuh"
 
 class ModelMLP {
 public:
@@ -25,6 +26,14 @@ public:
     }
 
     static void initializeRandomDense(vector<Layer*> layers, int beginIndex,int endIndex);
+
+    void trial(TrainData* input, int endIndex);
+
+    void reflect(TrainData *input, int endIndex);
+
+    void learn( int endIndex);
+
+    float calculateCost(TrainData *data, int endIndex, int* isCorrect);
 };
 
 

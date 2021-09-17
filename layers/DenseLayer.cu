@@ -3,7 +3,7 @@
 //
 
 #include "DenseLayer.cuh"
-#include "../../Networks/NetConfig.cuh"
+#include "../NetConfig.cuh"
 
 void DenseLayer::calculateActivations(MatrixOperations::Matrix2d *prevNodes)  {
     //z = w * a + b , a1 = sigmoid(z)
@@ -24,8 +24,8 @@ void DenseLayer::calculateErrorsAsOutput(MatrixOperations::Matrix2d *correctOut)
 //apply propagate : Weights - deltaWeights
 void DenseLayer::propagateWeights(MatrixOperations::Matrix2d *prevActivations)  {
     MatrixOperations::Matrix2d *transit;
-    (void) cudaMalloc(reinterpret_cast<void**>(&transit), sizeof(MatrixOperations::Matrix2d));
-    MatrixOperations::callAllocElement(transit, 1, prevActivations->rowcount);
+    (void) cudaMallocManaged(reinterpret_cast<void**>(&transit), sizeof(MatrixOperations::Matrix2d));
+    MatrixOperations::callAllocElementD(transit, 1, prevActivations->rowcount);
     MatrixOperations::callTransit2D( prevActivations, transit);
     MatrixOperations::callCrossProduct2D( this->errors, transit, this->weightDerivative);
     MatrixOperations::callConstantProduct2D( this->weightDerivative, LEARNING_RATE);
@@ -34,12 +34,13 @@ void DenseLayer::propagateWeights(MatrixOperations::Matrix2d *prevActivations)  
     (void) cudaFree(transit);
 }
 
+// E^l = (W^(l+1))^T * E^(l+1) <Hardmard> sigmoid'(z^l)
 void DenseLayer::calculateErrors(DenseLayer *thisLayer, MatrixOperations::Matrix2d *nextLayerWeights, MatrixOperations::Matrix2d *nextLayerErr)  {
     MatrixOperations::Matrix2d *transitWeights;
-    (void) cudaMalloc(reinterpret_cast<void**>(&transitWeights), sizeof(MatrixOperations::Matrix2d));
-    MatrixOperations::callAllocElement(transitWeights, nextLayerWeights->colcount, nextLayerWeights->rowcount);
+    (void) cudaMallocManaged(reinterpret_cast<void**>(&transitWeights), sizeof(MatrixOperations::Matrix2d));
+    MatrixOperations::callAllocElementD(transitWeights, nextLayerWeights->colcount, nextLayerWeights->rowcount);
     MatrixOperations::callTransit2D( nextLayerWeights, transitWeights);
-    MatrixOperations::callCrossProduct2D( transitWeights, nextLayerWeights, nextLayerErr);
+    MatrixOperations::callCrossProduct2D( transitWeights, nextLayerErr, thisLayer->errors);
     MatrixOperations::callSigmoidDerivative( thisLayer->z);
     MatrixOperations::callHardmardProduct( thisLayer->errors, thisLayer->z);
     (void) cudaFree(transitWeights->elements);
@@ -57,8 +58,9 @@ void DenseLayer::propagateBias() {
 }
 
 void DenseLayer::applyErrors() {
-    MatrixOperations::callConstantProduct2D( this->pastErrors, 1.0F/LEARNING_RATE);
+    MatrixOperations::callConstantProduct2D( this->pastErrors, 1.0F/static_cast<float>(BATCH_SIZE));
     MatrixOperations::callMatCopy( this->pastErrors, this->errors);
+    MatrixOperations::callAllocZero(this->pastErrors);
 }
 
 void DenseLayer::calculateErrors(Layer *in, Layer *next) {

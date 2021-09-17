@@ -34,6 +34,8 @@ public:
     };
 
     static bool ReadBmp(MatrixOperations::Matrix2d *temp, const char *szFileName);
+
+    static bool forceReadBMP(MatrixOperations::Matrix2d *temp, const char *szFileName);
 };
 
 

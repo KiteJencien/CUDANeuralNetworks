@@ -11,11 +11,6 @@ __global__ void setElement(MatrixOperations::Matrix2d *mat1, int row, int col, f
     MatrixOperations::setElement2D(mat1,row, col, value);
 }
 
-__global__ void allocateElements(MatrixOperations::Matrix2d *mat1,int row, int col){
-    mat1->rowcount = row;
-    mat1->colcount = col;
-    (void)cudaMalloc(reinterpret_cast<void**>(&mat1->elements),5*sizeof(float));
-}
 //random number fill (0-1)
 __global__ void allocRandom(long seed, MatrixOperations::Matrix2d *mat1){
     curandStateXORWOW_t state;
@@ -30,6 +25,11 @@ __global__ void allocZero( MatrixOperations::Matrix2d *mat1){
     int row = threadIdx.y + blockIdx.y * blockDim.y;
     int col = threadIdx.x + blockIdx.x * blockDim.x;
     MatrixOperations::setElement2D(mat1, row, col, 0.0F);
+}
+__global__ void flatten(MatrixOperations::Matrix2d *mat1, MatrixOperations::Matrix2d *mat2){
+    int row = threadIdx.y + blockIdx.y * blockDim.y;
+    int col = threadIdx.x + blockIdx.x * blockDim.x;
+    MatrixOperations::setElement2D(mat2, row*mat1->colcount + col, 0, MatrixOperations::getElement2D(mat1,row,col));
 }
 
 //cross product
@@ -90,7 +90,7 @@ __global__ void subtraction2D(MatrixOperations::Matrix2d *mat1, MatrixOperations
     int col = threadIdx.x + blockIdx.x * blockDim.x;
     float currentValue = MatrixOperations::getElement2D(mat1, row, col);
     currentValue -= MatrixOperations::getElement2D(mat2, row, col);
-    MatrixOperations::setElement2D(mat1, row, col, currentValue);
+    MatrixOperations::setElement2D(result, row, col, currentValue);
 }
 
 __global__ void exponential2D(MatrixOperations::Matrix2d *mat1, float value){
@@ -160,13 +160,16 @@ void MatrixOperations::callCrossProduct2D( MatrixOperations::Matrix2d *mat1,
                                            MatrixOperations::Matrix2d *mat2, MatrixOperations::Matrix2d *result) {
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
+
     //condition
-    if (mat1->colcount != mat2->rowcount || mat1->colcount != result -> colcount
-        || mat2->rowcount != result -> rowcount){
+    if (mat1->colcount != mat2->rowcount || mat1->rowcount != result -> rowcount
+        || mat2->colcount != result -> colcount){
         LogUtils::logErr("CrossProduct2D : Dimensional Mismatch");
+        printf("mat1 colcount %d -> mat 2 rowcount %d\nmat1 ROWCOUNT %d -> result ROWCOUNT %d \n"
+               "mat 2 COLCOUNT %d -> result COLCOUNT %d", mat1->colcount,mat2->rowcount,
+               mat1->rowcount, result -> rowcount,mat2->colcount, result -> colcount);
         throw exception("CrossProduct2D : Dimensional Mismatch");
     }
-
 
     (void)crossProduct2D<<<gridSize, CUDA_BLOCK_SIZE>>> (mat1, mat2, result);
     (void)cudaDeviceSynchronize();
@@ -178,6 +181,8 @@ void MatrixOperations::callAddition( MatrixOperations::Matrix2d *mat1,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
     if (mat1 -> colcount != mat2 -> colcount || mat1 -> rowcount != mat2 -> rowcount){
         LogUtils::logErr("Addition2D : Dimensional Mismatch");
+        cout<< "COL : "<<mat1 -> colcount <<" : "<< mat2 -> colcount<<endl;
+        cout<< "ROW : "<<mat1 -> rowcount <<" : "<< mat2 -> rowcount <<endl;
         throw exception("Addition2D : Dimensional Mismatch");
     }
     (void)addition2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2);
@@ -190,6 +195,8 @@ void MatrixOperations::callAddition(MatrixOperations::Matrix2d *mat1,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
     if (mat1 -> colcount != mat2 -> colcount || mat1 -> rowcount != mat2 -> rowcount){
         LogUtils::logErr("Addition2D : Dimensional Mismatch");
+        cout<< "COL : "<<mat1 -> colcount <<" : "<< mat2 -> colcount<<endl;
+        cout<< "ROW : "<<mat1 -> rowcount <<" : "<< mat2 -> rowcount <<endl;
         throw exception("Addition2D : Dimensional Mismatch");
     }
     (void)addition2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2, result);
@@ -252,10 +259,12 @@ void MatrixOperations::callSubtraction(MatrixOperations::Matrix2d *mat1,
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
     if (mat1 -> colcount != mat2 -> colcount || mat1 -> rowcount != mat2 -> rowcount){
-        LogUtils::logErr("Addition2D : Dimensional Mismatch");
-        throw exception("Addition2D : Dimensional Mismatch");
+        LogUtils::logErr("Subtraction2D : Dimensional Mismatch");
+        cout<< "COL : "<<mat1 -> colcount <<" : "<< mat2 -> colcount<<endl;
+        cout<< "ROW : "<<mat1 -> rowcount <<" : "<< mat2 -> rowcount <<endl;
+        throw exception("Subtraction2D : Dimensional Mismatch");
     }
-    (void)addition2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2);
+    (void)subtraction2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2);
     (void)cudaDeviceSynchronize();
 }
 
@@ -264,17 +273,19 @@ void MatrixOperations::callSubtraction( MatrixOperations::Matrix2d *mat1,
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
     if (mat1 -> colcount != mat2 -> colcount || mat1 -> rowcount != mat2 -> rowcount){
-        LogUtils::logErr("Addition2D : Dimensional Mismatch");
-        throw exception("Addition2D : Dimensional Mismatch");
+        LogUtils::logErr("Subtraction2D : Dimensional Mismatch");
+        cout<< "COL : "<<mat1 -> colcount <<" : "<< mat2 -> colcount<<endl;
+        cout<< "ROW : "<<mat1 -> rowcount <<" : "<< mat2 -> rowcount <<endl;
+        throw exception("Subtraction2D : Dimensional Mismatch");
     }
-    (void)addition2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2, result);
+    (void)subtraction2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, mat2, result);
     (void)cudaDeviceSynchronize();
 }
 
 void MatrixOperations::callExponential(MatrixOperations::Matrix2d *mat1, float value) {
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
-    (void) exponential2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, value);
+    (void)exponential2D<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1, value);
     (void)cudaDeviceSynchronize();
 }
 
@@ -296,11 +307,6 @@ void MatrixOperations::callMatCopy( MatrixOperations::Matrix2d *src,
 
 
 
-void MatrixOperations::callAllocElement(MatrixOperations::Matrix2d *mat1, int row, int col) {
-    (void) allocateElements<<<dim3(1,1), CUDA_BLOCK_SIZE>>>(mat1, row, col);
-    (void) cudaDeviceSynchronize();
-}
-
 void MatrixOperations::callAllocZero(MatrixOperations::Matrix2d *mat1) {
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
@@ -319,3 +325,43 @@ void MatrixOperations::callSetElement(MatrixOperations::Matrix2d *mat1, int row,
     (void) setElement<<<dim3(1,1),CUDA_BLOCK_SIZE>>>(mat1, row, col, value);
     (void)cudaDeviceSynchronize();
 }
+
+void MatrixOperations::callFreeElement(MatrixOperations::Matrix2d* mat1) {
+    (void) cudaFree(mat1->elements);
+}
+
+void MatrixOperations::callAllocElementH(MatrixOperations::Matrix2d *mat1, int row, int col) {
+    mat1->rowcount = row;
+    mat1->colcount = col;
+    (void)cudaMallocHost(reinterpret_cast<void**>(&mat1->elements),row*col*sizeof(float));
+}
+
+void MatrixOperations::callAllocElementD(MatrixOperations::Matrix2d *mat1, int row, int col) {
+    mat1->rowcount = row;
+    mat1->colcount = col;
+    (void)cudaMalloc(reinterpret_cast<void**>(&mat1->elements),row*col*sizeof(float));
+}
+
+void MatrixOperations::callFlatten(MatrixOperations::Matrix2d *mat1, MatrixOperations::Matrix2d *mat2) {
+    dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
+                         (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
+    (void) flatten<<<gridSize, CUDA_BLOCK_SIZE>>>(mat1,mat2);
+    (void) cudaDeviceSynchronize();
+}
+
+void MatrixOperations::inspect(MatrixOperations::Matrix2d *mat1) {
+    Matrix2d* debug;
+    cudaMallocHost(reinterpret_cast<void**>(&debug), mat1->colcount * mat1->rowcount * sizeof(float));
+    callAllocElementH(debug, mat1->rowcount, mat1->colcount);
+    callMatCopy(mat1, debug);
+    for (int i = 0; i< debug -> rowcount; i++) {
+        for (int j = 0; j < debug->colcount; j++) {
+             cout<<*(debug->elements + i*debug->colcount + j)<<" ";
+        }
+        cout<<endl;
+    }
+    cudaFree(debug->elements);
+    cudaFree(debug);
+}
+
+

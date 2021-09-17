@@ -53,15 +53,24 @@ public:
     //call transit method:
     static void callTransit2D( Matrix2d *mat1, Matrix2d *result);
 
+    //flatten the matrix:
+    static void callFlatten(Matrix2d *mat1, Matrix2d *mat2);
+
     //call the copy of mat
     static void callMatCopy( Matrix2d *src, Matrix2d *dist);
 
     //mem allocation for elements
-    static void callAllocElement(Matrix2d *mat1, int row, int col);
+    static void callAllocElementD(Matrix2d *mat1, int row, int col);
+    static void callAllocElementH(Matrix2d *mat1, int row, int col);
+    static void callFreeElement(Matrix2d *mat1);
 
     //initialization of empty Matrix
     static void callAllocRandom(Matrix2d *mat1);
     static void callAllocZero(Matrix2d *mat1);
+
+
+    //Debug tools
+    static void inspect(Matrix2d* mat1);
 
 };
 

@@ -21,16 +21,16 @@ public:
     //place data on the host while initiating
     TrainData(){
         (void) cudaMallocHost(reinterpret_cast<void**>(&data), sizeof(MatrixOperations::Matrix2d));
-        (void) cudaMallocHost(reinterpret_cast<void**>(&data->elements), DATA_INPUT_SIZE_1D * sizeof(float));
         (void) cudaMallocHost(reinterpret_cast<void**>(&label), sizeof(MatrixOperations::Matrix2d));
-        (void) cudaMallocHost(reinterpret_cast<void**>(&label->elements), DATA_OUTPUT_SIZE_1D * sizeof(float));
+        MatrixOperations::callAllocElementH(data, MNIST_INPUT_DIMENSION_ROW, MNIST_INPUT_DIMENSION_COL);
+        MatrixOperations::callAllocElementH(label, DATA_OUTPUT_SIZE_1D, 1);
     }
 
     //copy the dataset to the device memory
     void AllocateDataOnDeviceMem();
 
     //clear the dataset on the device memory
-    void FreeDataOnDeviceMem() const;
+    void freeDataOnDeviceMem() const;
 
 
 };

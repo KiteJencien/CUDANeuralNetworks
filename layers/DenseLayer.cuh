@@ -11,7 +11,7 @@
 
 class DenseLayer : public Layer{
 public:
-    MatrixOperations::Matrix2d *weights, *weightDerivative,*bias, *z, *nodes, *errors, *pastErrors;
+    MatrixOperations::Matrix2d *weights, *weightDerivative,*bias, *z, *errors, *pastErrors;
 
     //the callback function for error calculation
     typedef void (callBack)(Layer *in, Layer *next);
@@ -31,13 +31,13 @@ public:
         (void) cudaMallocManaged(reinterpret_cast<void**>(&pastErrors),sizeof(MatrixOperations::Matrix2d));
 
         //Allocate elements
-        MatrixOperations::callAllocElement(weights, PREV_NODE_NUMBER, NODE_NUMBER);
-        MatrixOperations::callAllocElement(weightDerivative, PREV_NODE_NUMBER, NODE_NUMBER);
-        MatrixOperations::callAllocElement(bias, NODE_NUMBER, 1);
-        MatrixOperations::callAllocElement(nodes, NODE_NUMBER, 1);
-        MatrixOperations::callAllocElement(z, NODE_NUMBER, 1);
-        MatrixOperations::callAllocElement(errors, NODE_NUMBER, 1);
-        MatrixOperations::callAllocElement(pastErrors, NODE_NUMBER, 1);
+        MatrixOperations::callAllocElementD(weights, NODE_NUMBER, PREV_NODE_NUMBER);
+        MatrixOperations::callAllocElementD(weightDerivative, NODE_NUMBER, PREV_NODE_NUMBER);
+        MatrixOperations::callAllocElementD(bias, NODE_NUMBER, 1);
+        MatrixOperations::callAllocElementD(nodes, NODE_NUMBER, 1);
+        MatrixOperations::callAllocElementD(z, NODE_NUMBER, 1);
+        MatrixOperations::callAllocElementD(errors, NODE_NUMBER, 1);
+        MatrixOperations::callAllocElementD(pastErrors, NODE_NUMBER, 1);
 
         LogUtils::logInfo("layer registered : dense : " + to_string(NODE_NUMBER) +
                           " : layer memory usage : " + to_string(static_cast<float>(NODE_NUMBER*(PREV_NODE_NUMBER)*sizeof(float))

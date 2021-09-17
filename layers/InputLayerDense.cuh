@@ -7,12 +7,16 @@
 
 #include "../utils/MatrixOperations.cuh"
 #include "../utils/LogUtils.cuh"
+#include "../NetConfig.cuh"
 #include "Layer.cuh"
 
 class InputLayerDense : public Layer{
 public:
+
     InputLayerDense(int NODE_NUMBER){
         this->NODE_NUMBER = NODE_NUMBER;
+        cudaMallocManaged(reinterpret_cast<void**>(&nodes), sizeof(MatrixOperations::Matrix2d));
+        MatrixOperations::callAllocElementD(nodes, DATA_INPUT_SIZE_1D, 1);
         LogUtils::logInfo("input layer size : 1d : 784");
     }
 

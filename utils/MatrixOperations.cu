@@ -297,16 +297,6 @@ void MatrixOperations::callExponential( MatrixOperations::Matrix2d *mat1, float 
     (void) cudaDeviceSynchronize();
 }
 
-void MatrixOperations::callMatCopy( MatrixOperations::Matrix2d *src,
-                                    MatrixOperations::Matrix2d *dist) {
-    dim3 gridSize = dim3((src->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
-                         (src->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
-    (void) MatCpy<<<gridSize,  CUDA_BLOCK_SIZE>>>(src,dist);
-    (void) cudaDeviceSynchronize();
-}
-
-
-
 void MatrixOperations::callAllocZero(MatrixOperations::Matrix2d *mat1) {
     dim3 gridSize = dim3((mat1->colcount + CUDA_BLOCK_SIZE.x - 1) / CUDA_BLOCK_SIZE.x,
                          (mat1->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
@@ -353,7 +343,7 @@ void MatrixOperations::inspect(MatrixOperations::Matrix2d *mat1) {
     Matrix2d* debug;
     cudaMallocHost(reinterpret_cast<void**>(&debug), mat1->colcount * mat1->rowcount * sizeof(float));
     callAllocElementH(debug, mat1->rowcount, mat1->colcount);
-    callMatCopy(mat1, debug);
+    callMatCopyD2H(mat1, debug);
     for (int i = 0; i< debug -> rowcount; i++) {
         for (int j = 0; j < debug->colcount; j++) {
              cout<<*(debug->elements + i*debug->colcount + j)<<" ";
@@ -362,6 +352,18 @@ void MatrixOperations::inspect(MatrixOperations::Matrix2d *mat1) {
     }
     cudaFree(debug->elements);
     cudaFree(debug);
+}
+
+void MatrixOperations::callMatCopyD2D(MatrixOperations::Matrix2d *src, MatrixOperations::Matrix2d *dist) {
+    cudaMemcpy(dist->elements,src->elements,sizeof(float)*dist->colcount*dist->rowcount,cudaMemcpyDeviceToDevice);
+}
+
+void MatrixOperations::callMatCopyH2D(MatrixOperations::Matrix2d *src, MatrixOperations::Matrix2d *dist) {
+    cudaMemcpy(dist->elements,src->elements,sizeof(float)*dist->colcount*dist->rowcount,cudaMemcpyHostToDevice);
+}
+
+void MatrixOperations::callMatCopyD2H(MatrixOperations::Matrix2d *src, MatrixOperations::Matrix2d *dist) {
+    cudaMemcpy(dist->elements,src->elements,sizeof(float)*dist->colcount*dist->rowcount,cudaMemcpyDeviceToHost);
 }
 
 

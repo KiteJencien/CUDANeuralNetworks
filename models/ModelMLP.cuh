@@ -33,6 +33,8 @@ public:
 
     void learn( int endIndex);
 
+    void straightLearn(TrainData* data, int endIndex);
+
     float calculateCost(TrainData *data, int endIndex, int* isCorrect);
 };
 

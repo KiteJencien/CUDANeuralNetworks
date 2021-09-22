@@ -18,10 +18,12 @@ static void runModelMLP(){
         for(int j=0;j<BATCH_SIZE;j++){
             model->trial(batch->data[j],4);
             cost += model->calculateCost(batch->data[j],4, &isCorrect);
-            model->reflect(batch->data[j],4);
+            model->straightLearn(batch->data[j], 4);
+            //model->reflect(batch->data[j],4);
         }
-        model->learn(4);
-        // MatrixOperations::inspect(model->layers[3]->nodes);
+        //model->learn(4);
+        // MatrixOperations::inspect(reinterpret_cast<DenseLayer*>(model->layers[3])->nodes);
+        // MatrixOperations::inspect(reinterpret_cast<DenseLayer*>(model->layers[3])->weightDerivative);
         LogUtils::logInfo("Training : current cost : " + to_string(cost/static_cast<float>(BATCH_SIZE)
         ) + " at batch " + to_string(i) + " ACCURACY :" + to_string((float)isCorrect/(float)BATCH_SIZE), 0X05);
         Dataset::freeBatch(batch);

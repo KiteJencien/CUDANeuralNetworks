@@ -13,8 +13,8 @@ void TrainData::AllocateDataOnDeviceMem() {
     MatrixOperations::callAllocElementD(dataG, DATA_INPUT_SIZE_1D, 1);
     MatrixOperations::callAllocElementD(labelG, DATA_OUTPUT_SIZE_1D, 1);
 
-    MatrixOperations::callMatCopy(data,dataG);
-    MatrixOperations::callMatCopy(label,labelG);
+    MatrixOperations::callMatCopyH2D(data,dataG);
+    MatrixOperations::callMatCopyH2D(label,labelG);
 }
 
 void TrainData::freeDataOnDeviceMem() const {

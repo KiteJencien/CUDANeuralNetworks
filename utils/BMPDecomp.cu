@@ -75,7 +75,7 @@ bool BMPDecomp::ReadBmp(MatrixOperations::Matrix2d *temp, const char *szFileName
     generateInputMatrix<<<gridSize, CUDA_BLOCK_SIZE>>>(calcTemp, buffer, bih.biHeight, bih.biBitCount, lineByteWidth);
     (void) cudaDeviceSynchronize();
     MatrixOperations::inspect(calcTemp);
-    MatrixOperations::callMatCopy(calcTemp,temp);
+    MatrixOperations::callMatCopyD2H(calcTemp,temp);
     cudaFree(calcTemp->elements);
     cudaFree(calcTemp);
     cudaFree(buffer);
@@ -86,6 +86,7 @@ bool BMPDecomp::forceReadBMP(MatrixOperations::Matrix2d *temp, const char *szFil
     FILE* file;
     unsigned char* buffer;
     MatrixOperations::Matrix2d* calcTemp;
+
     cudaMallocManaged(reinterpret_cast<void**>(&calcTemp), sizeof(MatrixOperations::Matrix2d));
     MatrixOperations::callAllocElementD(calcTemp, temp->rowcount, temp->colcount);
     cudaMallocManaged(reinterpret_cast<void**>(&buffer), sizeof (DATA_INPUT_SIZE_1D*4) + 54);
@@ -98,7 +99,7 @@ bool BMPDecomp::forceReadBMP(MatrixOperations::Matrix2d *temp, const char *szFil
                          (calcTemp->rowcount + CUDA_BLOCK_SIZE.y - 1) / CUDA_BLOCK_SIZE.y);
     forceGenerateInputMatrix<<<gridSize, CUDA_BLOCK_SIZE>>>(calcTemp, buffer);
     (void) cudaDeviceSynchronize();
-    MatrixOperations::callMatCopy(calcTemp,temp);
+    MatrixOperations::callMatCopyD2H(calcTemp,temp);
     cudaFree(calcTemp->elements);
     cudaFree(calcTemp);
     cudaFree(buffer);

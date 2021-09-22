@@ -47,7 +47,7 @@ float ModelMLP::calculateCost(TrainData *data, int endIndex, int* isCorrect) {
     cudaMallocHost(reinterpret_cast<void**>(&finalActivations->elements), DATA_OUTPUT_SIZE_1D*sizeof(float));
     finalActivations->rowcount = DATA_OUTPUT_SIZE_1D;
     finalActivations->colcount = 1;
-    MatrixOperations::callMatCopy(currentLayer->nodes,finalActivations);
+    MatrixOperations::callMatCopyD2H(currentLayer->nodes,finalActivations);
     float out = 0;
     float max1 = 0;
     int maxIndex1 = 0;
@@ -56,7 +56,8 @@ float ModelMLP::calculateCost(TrainData *data, int endIndex, int* isCorrect) {
     for(int  i=0; i<DATA_OUTPUT_SIZE_1D; i++){
         float act1 = *(finalActivations->elements + i);
         float act2 = *(data->label->elements + i);
-        out += 0.5f * (act2-act1)*(act2-act1);
+        //cout<<act1<<" "<<act2<<endl;
+        out += abs(act2-act1);
         if(max1 < act1){ max1 = act1; maxIndex1 = i;}
         if(max2 < act2){ max2 = act2; maxIndex2 = i;}
     }
@@ -64,5 +65,22 @@ float ModelMLP::calculateCost(TrainData *data, int endIndex, int* isCorrect) {
     cudaFree(finalActivations->elements);
     cudaFree(finalActivations);
     return out;
+}
+
+void ModelMLP::straightLearn(TrainData *input, int endIndex) {
+    auto *outputLayer = reinterpret_cast<DenseLayer*>(this->layers[endIndex-1]);
+    outputLayer->calculateErrorsAsOutput(input->labelG);
+    outputLayer->rememberErrors();
+    for(int i=endIndex-2; i>0;i--){
+        auto *currentLayer = reinterpret_cast<DenseLayer*>(this->layers[i]);
+        DenseLayer::calculateErrors(currentLayer,this->layers[i+1]);
+    }
+    //MatrixOperations::inspect(reinterpret_cast<DenseLayer*>(this->layers[endIndex-1])->errors);
+    for(int i=1;i<endIndex;i++){
+        auto *currentLayer = reinterpret_cast<DenseLayer*>(this->layers[i]);
+        currentLayer->propagateWeights(layers[i-1]->nodes);
+        currentLayer->propagateBias();
+    }
+    //MatrixOperations::inspect(reinterpret_cast<DenseLayer*>(this->layers[endIndex-1])->bias);
 }
 

@@ -57,7 +57,9 @@ public:
     static void callFlatten(Matrix2d *mat1, Matrix2d *mat2);
 
     //call the copy of mat
-    static void callMatCopy( Matrix2d *src, Matrix2d *dist);
+    static void callMatCopyD2D( Matrix2d *src, Matrix2d *dist);
+    static void callMatCopyH2D( Matrix2d *src, Matrix2d *dist);
+    static void callMatCopyD2H( Matrix2d *src, Matrix2d *dist);
 
     //mem allocation for elements
     static void callAllocElementD(Matrix2d *mat1, int row, int col);

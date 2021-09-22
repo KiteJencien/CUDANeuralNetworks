@@ -14,8 +14,8 @@ void DenseLayer::calculateActivations(MatrixOperations::Matrix2d *prevNodes)  {
 
 // Error = (aL - y) *hadmard* sigmoidDerivative(z)
 void DenseLayer::calculateErrorsAsOutput(MatrixOperations::Matrix2d *correctOut)  {
+    MatrixOperations::callSubtraction(this->nodes, correctOut, this->errors);
     MatrixOperations::callSigmoidDerivative( this->z);
-    MatrixOperations::callSubtraction(this->z, correctOut, this->errors);
     //result will be stored in "errors"
     MatrixOperations::callHardmardProduct( this->errors, this->z);
 }
@@ -59,7 +59,7 @@ void DenseLayer::propagateBias() {
 
 void DenseLayer::applyErrors() {
     MatrixOperations::callConstantProduct2D( this->pastErrors, 1.0F/static_cast<float>(BATCH_SIZE));
-    MatrixOperations::callMatCopy( this->pastErrors, this->errors);
+    MatrixOperations::callMatCopyD2D( this->pastErrors, this->errors);
     MatrixOperations::callAllocZero(this->pastErrors);
 }
 
